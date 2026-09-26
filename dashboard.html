@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Share4hearts | Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Dashboard-specific styles */
+    .dashboard {
+      max-width: 900px;
+      margin: 50px auto;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 25px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(20px);
+    }
+
+    .stat {
+      display: inline-block;
+      margin: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 15px;
+      width: 150px;
+    }
+
+    .stat h2 {
+      font-size: 2rem;
+      margin: 0;
+      color: #fff;
+    }
+
+    .badges {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .badge {
+      padding: 10px 20px;
+      background: #00b894;
+      border-radius: 15px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .leaderboard {
+      margin-top: 40px;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 15px;
+    }
+
+    .leaderboard h3 {
+      color: #ffdf5d;
+      margin-bottom: 15px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      background: rgba(255,255,255,0.3);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .progress {
+      height: 20px;
+      width: 0%;
+      background: linear-gradient(90deg, #00ffab, #ff61d2);
+      transition: width 1s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">💖 Share4hearts</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="dashboard.html" class="active">Dashboard</a></li>
+      
+    </ul>
+  </div>
+
+  <section class="dashboard fade-in">
+    <h1>Welcome, <span id="username">User</span> 🌸</h1>
+
+    <div class="stat-container">
+      <div class="stat">
+        <h2 id="points">0</h2>
+        <p>Points</p>
+      </div>
+      <div class="stat">
+        <h2 id="streak">0🔥</h2>
+        <p>Streak Days</p>
+      </div>
+      <div class="stat">
+        <h2 id="donations">0</h2>
+        <p>Donations</p>
+      </div>
+    </div>
+
+    <h3>Your Badges 🏅</h3>
+    <div class="badges" id="badges"></div>
+
+    <div class="leaderboard">
+      <h3>🏆 Top Contributors</h3>
+      <ul id="leaderboardList"></ul>
+    </div>
+
+    <div class="community">
+      <h3>🎯 Community Challenge Progress</h3>
+      <div class="progress-bar"><div class="progress" id="progress"></div></div>
+      <p id="progressText"></p>
+    </div>
+  </section>
+
+  <script type="module" src="dashboard.js"></script>
+  <script type="module" src="gamification.js"></script>
+</body>
+</html>

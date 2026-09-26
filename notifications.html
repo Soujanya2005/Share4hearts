@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications | Share4hearts</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; padding: 20px; }
+    h1 { text-align: center; color: #00ffc3; }
+    #notifications { max-width: 600px; margin: 20px auto; }
+    .notification {
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .notification.unread { border-left: 5px solid #00ffc3; }
+    .notification p { margin: 0; flex: 1; }
+    .mark-read { background: #00ffc3; color: #000; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Notifications</h1>
+  <div id="notifications"></div>
+
+  <script type="module" src="notificationsViewer.js"></script>
+</body>
+</html>

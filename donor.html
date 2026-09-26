@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Donor Registration | Share4hearts</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root{
+      --accent: #00ffc3;
+      --accent-2: #00b894;
+      --glass: rgba(255,255,255,0.12);
+      --card-bg: rgba(255,255,255,0.10);
+      --input-bg: rgba(255,255,255,0.95);
+      --input-color: #222;
+      --error: #ff6b6b;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family: 'Poppins', sans-serif;
+      margin:0; color:#fff;
+      background: linear-gradient(135deg, #667eea, #00ffc3, #764ba2, #ff6ec7);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    @keyframes gradientShift{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+    .animated-bg{ position: fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+    .animated-bg span{ position:absolute; display:block; width:10px; height:10px; background: rgba(255,255,255,0.85); border-radius:50%; animation:sparkle 4s linear infinite; box-shadow:0 0 15px rgba(255,255,255,0.7), 0 0 30px rgba(0,255,192,0.4); }
+    @keyframes sparkle{
+      0%{transform:scale(0) rotate(0deg); opacity:0}
+      25%{transform:scale(1.2) rotate(45deg); opacity:0.9}
+      50%{transform:scale(1) rotate(90deg); opacity:1}
+      75%{transform:scale(1.2) rotate(135deg); opacity:0.7}
+      100%{transform:scale(0) rotate(180deg); opacity:0}
+    }
+    .navbar{ display:flex; justify-content:space-between; align-items:center; padding:15px 40px; backdrop-filter: blur(10px); background: rgba(255,255,255,0.12); position:sticky; top:0; z-index:5; }
+    .logo{ font-size:1.8rem; font-weight:700; color:#fff }
+    .nav-links{ display:flex; gap:20px; }
+    .nav-links a{ color:#fff; font-weight:500; text-decoration:none }
+    .nav-links a.active, .nav-links a:hover{ color:var(--accent) }
+    .content-section{ max-width:900px; margin:80px auto; padding:40px; border-radius:25px; background: var(--card-bg); backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align:center; position:relative; z-index:2; }
+    .page-title{ font-size:2.2rem; margin-bottom:10px }
+    .page-subtitle{ margin-bottom:30px; color:#f0f0f0 }
+    .form-card{ background: rgba(255,255,255,0.15); padding:28px; border-radius:18px; backdrop-filter: blur(18px); box-shadow: 0 8px 32px rgba(0,0,0,0.25); transition: transform .25s ease; }
+    .form-card:hover{ transform:translateY(-6px) }
+    form{ width:100% }
+    .form-row{ display:flex; gap:20px; flex-wrap:wrap; margin-bottom:18px; }
+    .form-row .form-group{ flex:1; min-width:220px; text-align:left; position: relative; }
+    label{ display:block; margin-bottom:8px; font-weight:600; color:#fff }
+    input[type="text"], input[type="email"], input[type="tel"], input[type="password"], select, textarea {
+      width:100%; padding:12px; border-radius:10px; border:none; outline:none;
+      font-size:1rem; background: var(--input-bg); color: var(--input-color);
+      transition: box-shadow .18s ease, transform .12s ease;
+    }
+    textarea{ min-height:88px; resize:vertical }
+    input:focus, select:focus, textarea:focus{ box-shadow: 0 0 0 3px rgba(0,255,195,0.12); transform: translateY(-1px); }
+    .main-btn{ width:100%; padding:12px; border-radius:12px; border:none; background: linear-gradient(45deg, var(--accent), var(--accent-2)); color:#fff; font-weight:700; cursor:pointer; font-size:1.05rem; transition: transform .15s ease, box-shadow .15s ease; }
+    .main-btn:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.12) }
+    .error { color: var(--error); font-size:0.9rem; margin-top:6px; display:none; }
+    input.invalid, textarea.invalid, select.invalid { border:1px solid var(--error); box-shadow: 0 0 8px rgba(255,80,80,0.15); }
+    .donation-checkboxes { background: var(--input-bg); color: var(--input-color); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .donation-checkboxes label { font-size: 1rem; font-weight: 500; color: var(--input-color); display: flex; align-items: center; gap: 8px; }
+    .donation-checkboxes input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+    @media (max-width:640px){ .content-section{ margin:40px 18px; padding:24px } .form-row{ gap:12px } }
+  </style>
+</head>
+<body>
+  <div class="animated-bg" aria-hidden="true">
+    <span style="left:10%; top:20%; animation-delay:0s"></span>
+    <span style="left:50%; top:40%; animation-delay:1s"></span>
+    <span style="left:80%; top:10%; animation-delay:2s"></span>
+    <span style="left:30%; top:70%; animation-delay:3s"></span>
+    <span style="left:60%; top:80%; animation-delay:4s"></span>
+    <span style="left:20%; top:50%; animation-delay:.5s"></span>
+    <span style="left:70%; top:30%; animation-delay:1.5s"></span>
+    <span style="left:40%; top:10%; animation-delay:2.5s"></span>
+    <span style="left:90%; top:60%; animation-delay:3.5s"></span>
+    <span style="left:15%; top:90%; animation-delay:4.5s"></span>
+  </div>
+
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="logo">Share4heats</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="join.html" class="active">Join Us</a>
+    </div>
+  </nav>
+
+  <section class="content-section" aria-labelledby="donorTitle">
+    <h1 id="donorTitle" class="page-title">Donor Registration</h1>
+    <p class="page-subtitle">Provide your details to join our community of kind donors.</p>
+
+    <div class="form-card" role="region" aria-label="Donor registration form">
+      <form id="donorForm" novalidate>
+        <!-- Name & Phone -->
+        <div class="form-row">
+          <div class="form-group"><label for="name">Full Name</label><input id="name" name="name" type="text" placeholder="Enter your full name" required><div class="error" id="nameError">Name must contain only letters and spaces.</div></div>
+          <div class="form-group"><label for="phone">Contact Number</label><input id="phone" name="phone" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Enter your contact number" required><div class="error" id="phoneError">Please enter a 10-digit phone number.</div></div>
+        </div>
+        <!-- Email & State -->
+        <div class="form-row">
+          <div class="form-group"><label for="email">Email</label><input id="email" name="email" type="email" placeholder="Enter your email address" required><div class="error" id="emailError">Please enter a valid email address.</div></div>
+          <div class="form-group"><label for="state">Select State</label><select id="state" name="state" required>
+            <option value="">Choose your state</option>
+            <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option><option>Bihar</option><option>Chhattisgarh</option><option>Delhi</option><option>Goa</option><option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option><option>Jammu and Kashmir</option><option>Jharkhand</option><option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option><option>Odisha</option><option>Punjab</option><option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option><option>Other</option></select><div class="error" id="stateError">Please select a state.</div></div>
+        </div>
+
+        <!-- Pincode & Address -->
+        <div class="form-row">
+          <div class="form-group"><label for="pincode">Pincode</label><input id="pincode" name="pincode" type="text" inputmode="numeric" placeholder="Enter your area pincode" required><div class="error" id="pincodeError">Pincode must be 6 digits.</div></div>
+          <div class="form-group"><label for="address">Address</label><textarea id="address" name="address" placeholder="Enter your full address" required></textarea><div class="error" id="addressError">Please enter a valid address (min 5 characters).</div></div>
+        </div>
+
+        <!-- Password & Confirm -->
+        <div class="form-row">
+          <div class="form-group"><label for="password">Password</label><input id="password" name="password" type="password" placeholder="Create password" required><div class="error" id="passwordStrength">Password must be at least 6 characters.</div></div>
+          <div class="form-group"><label for="confirmPassword">Confirm Password</label><input id="confirmPassword" name="confirmPassword" type="password" placeholder="Re-enter password" required><div class="error" id="passwordError">Passwords do not match.</div></div>
+        </div>
+
+        <!-- Donation Items -->
+        <div class="form-row">
+          <div class="form-group"><label>Items you want to donate</label>
+            <div class="donation-checkboxes">
+              <label><input type="checkbox" name="donationItems" value="Food"> Food</label>
+              <label><input type="checkbox" name="donationItems" value="Clothes"> Clothes</label>
+              <label><input type="checkbox" name="donationItems" value="Books/Stationery"> Books / Stationery</label>
+            </div>
+            <div class="error" id="donationTypeError">Please select at least one item to donate.</div>
+          </div>
+        </div>
+
+        <button type="submit" class="main-btn">Submit Registration</button>
+      </form>
+    </div>
+  </section>
+
+  <script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8p97ph9lfvVkoAd4SucxL1aQ0NGHLmjY",
+    authDomain: "sharecare-616af.firebaseapp.com",
+    projectId: "sharecare-616af",
+    storageBucket: "sharecare-616af.firebasestorage.app",
+    messagingSenderId: "45027282617",
+    appId: "1:45027282617:web:55627278ee0421fc06d568",
+    measurementId: "G-ZY25LNSPMD"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  const form = document.getElementById('donorForm');
+
+  const validators = {
+    name: v => /^[A-Za-z\s]{2,}$/.test(v),
+    phone: v => /^\d{10}$/.test(v),
+    email: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+    pincode: v => /^\d{6}$/.test(v),
+    address: v => v.trim().length >= 5,
+    password: v => v.length >= 6
+  };
+
+  function showError(el, id, msg) {
+    el.classList.add('invalid');
+    const e = document.getElementById(id);
+    if (msg) e.textContent = msg;
+    e.style.display = 'block';
+  }
+  function clearError(el, id) {
+    el.classList.remove('invalid');
+    document.getElementById(id).style.display = 'none';
+  }
+
+  function validateField(id) {
+    const el = document.getElementById(id);
+    const val = el.value.trim();
+    if (id === 'name') { if (!validators.name(val)) { showError(el, 'nameError'); return false; } else { clearError(el,'nameError'); return true; } }
+    if (id === 'phone') { if (!validators.phone(val)) { showError(el,'phoneError'); return false; } else { clearError(el,'phoneError'); return true; } }
+    if (id === 'email') { if (!validators.email(val)) { showError(el,'emailError'); return false; } else { clearError(el,'emailError'); return true; } }
+    if (id === 'pincode') { if (!validators.pincode(val)) { showError(el,'pincodeError'); return false; } else { clearError(el,'pincodeError'); return true; } }
+    if (id === 'address') { if (!validators.address(val)) { showError(el,'addressError'); return false; } else { clearError(el,'addressError'); return true; } }
+    if (id === 'password') { if (!validators.password(val)) { showError(el,'passwordStrength'); return false; } else { clearError(el,'passwordStrength'); return true; } }
+    if (id === 'confirmPassword') { const pwd = document.getElementById('password').value; if (val!==pwd || val.length<6){ showError(el,'passwordError'); return false;} else {clearError(el,'passwordError'); return true;} }
+    return true;
+  }
+
+  function validateDonation() {
+    const checked = document.querySelectorAll('input[name="donationItems"]:checked');
+    const container = document.querySelector('input[name="donationItems"]').closest('.form-group');
+    if(checked.length === 0){ container.classList.add('invalid'); document.getElementById('donationTypeError').style.display='block'; return false;}
+    else { container.classList.remove('invalid'); document.getElementById('donationTypeError').style.display='none'; return true; }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let ok = true;
+
+    ['name','phone','email','pincode','address','password','confirmPassword','state'].forEach(id=>{
+      if(id==='state'){ 
+        const s = document.getElementById('state'); 
+        if(!s.value){ s.classList.add('invalid'); document.getElementById('stateError').style.display='block'; ok=false;} 
+        else{ s.classList.remove('invalid'); document.getElementById('stateError').style.display='none';}
+      } 
+      else { if(!validateField(id)) ok=false; }
+    });
+    if(!validateDonation()) ok=false;
+    if(!ok) return;
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const state = document.getElementById('state').value;
+    const pincode = document.getElementById('pincode').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const password = document.getElementById('password').value;
+    const donationItems = Array.from(document.querySelectorAll('input[name="donationItems"]:checked')).map(cb=>cb.value);
+
+    try {
+      let user;
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email,password);
+        user = userCredential.user;
+        await user.sendEmailVerification();
+        alert("✅ Verification email sent. Check inbox or spam.");
+      } catch(err) {
+        if(err.code === "auth/email-already-in-use"){
+          const userCredential = await auth.signInWithEmailAndPassword(email,password);
+          user = userCredential.user;
+          if(!user.emailVerified){
+            await user.sendEmailVerification();
+            alert("✅ Verification email resent. Check inbox or spam.");
+          }
+        } else throw err;
+      }
+
+      await db.collection('donors').doc(user.uid).collection('submissions').add({
+        name, email, phone, state, pincode, address, donationItems,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // After saving the donor info to Firestore
+const notifRef = db.collection("notifications").doc(); // auto ID
+
+// Get all volunteers
+const volunteersSnap = await db.collection("volunteers").get();
+const volunteerIDs = volunteersSnap.docs.map(doc => doc.id);
+
+// Save notification for all volunteers
+await notifRef.set({
+  message: `A new donation has been added by ${name}!`,
+  read: false,
+  timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+  to: volunteerIDs
+});
+
+
+      alert("✅ Donor registered successfully!");
+      form.reset();
+      document.querySelectorAll('.error').forEach(e=>e.style.display='none');
+      document.querySelectorAll('.invalid').forEach(i=>i.classList.remove('invalid'));
+    } catch(error){
+      alert("❌ Error: "+error.message);
+    }
+  });
+
+  ['name','phone','email','pincode','address','password','confirmPassword'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.addEventListener('blur', ()=>validateField(id));
+    el.addEventListener('input', ()=>{ if(el.classList.contains('invalid')) validateField(id); });
+  });
+</script>

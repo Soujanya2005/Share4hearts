@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Receiver Registration | Share4hearts</title>
+  <!-- Firebase App -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<!-- Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    /* ===== GENERAL STYLING ===== */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: linear-gradient(-45deg, #43cea2, #185a9d, #5efce8, #736efe);
+      background-size: 400% 400%;
+      animation: gradient 10s ease infinite;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    a { text-decoration: none; }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 40px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: #fff;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: #00ffc3;
+    }
+
+    /* ===== ANIMATED BACKGROUND SPARKLES ===== */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .animated-bg span {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: sparkle 4s linear infinite;
+      box-shadow: 0 0 15px rgba(255,255,255,0.7), 0 0 30px rgba(0,255,192,0.5);
+    }
+
+    @keyframes sparkle {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    /* ===== PAGE CONTENT ===== */
+    .content-section {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .page-title {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    .page-subtitle {
+      margin-bottom: 40px;
+      color: #e0e0e0;
+    }
+
+    /* ===== CATEGORY BUTTONS ===== */
+    .category-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .category-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255,255,255,0.3);
+      padding: 20px 40px;
+      border-radius: 15px;
+      font-size: 1.1rem;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+
+    .category-btn:hover {
+      background: linear-gradient(45deg, #00ffc3, #00b894);
+      transform: scale(1.08);
+      box-shadow: 0 8px 25px rgba(0,255,195,0.4);
+    }
+
+    /* ===== POPUP FORM ===== */
+    .popup-form {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 700px;
+      backdrop-filter: blur(25px);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      z-index: 10;
+      transition: all 0.4s ease;
+      overflow-y: auto;
+      max-height: 90vh;
+    }
+
+    .popup-form.active { display: block; }
+
+    .popup-form h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #fff;
+      background: transparent;
+      border: none;
+    }
+
+    /* ===== FORM GRID ===== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .form-group {
+      text-align: left;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      width: 250px;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.85);
+      color: #333;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+      grid-column: span 2;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      box-shadow: 0 0 0 2px #00ffc3;
+    }
+
+    .main-btn {
+      width: 250px;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      background: linear-gradient(45deg, #00ffc3, #00b894);
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+      grid-column: span 2;
+    }
+
+    .main-btn:hover { transform: scale(1.05); }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      resize: vertical;
+    }
+
+    button[type="submit"] {
+      width: 250px;
+      height:60px;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 8px;
+      margin: 20px auto;
+      display: block;
+    }
+
+    .member-counts {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 5px;
+    }
+
+    .member-counts input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.85);
+      color: #333;
+      outline: none;
+    }
+
+    .member-counts input:focus {
+      box-shadow: 0 0 0 2px #00ffc3;
+    }
+
+    .total-display {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .total-display input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.7);
+      font-weight: bold;
+    }
+
+    .total-label {
+      font-size: 14px;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    /* ===== ERROR MESSAGES ===== */
+    .error-text {
+      color: red;
+      font-size: 12px;
+      margin-top: 4px;
+      position: absolute;
+      bottom: -18px;
+      left: 0;
+    }
+    .form-group {
+  text-align: left;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.error-text {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+  position: absolute;
+  left: 0;
+  bottom: -20px; /* stays just below the input */
+  width: 100%;   /* ensures error aligns under input, not spanning next field */
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="animated-bg">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <nav class="navbar">
+    <div class="logo">Share4hearts</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="join.html" class="active">Join Us</a></li>
+    </ul>
+  </nav>
+
+  <section class="content-section">
+    <h1 class="page-title">Receiver Registration</h1>
+    <p class="page-subtitle">Choose your type of organization to register.</p>
+    <div class="category-buttons">
+      <button class="category-btn" onclick="openForm('NGO')">NGO</button>
+      <button class="category-btn" onclick="openForm('Orphanage')">Orphanage</button>
+      <button class="category-btn" onclick="openForm('Old Age Home')">Old Age Home</button>
+    </div>
+  </section>
+
+  <div id="popupForm" class="popup-form">
+    <button class="close-btn" onclick="closeForm()">✖</button>
+    <h2 id="formTitle"></h2>
+    <form id="receiverForm" onsubmit="return validateForm()">
+      <div class="form-grid" id="formFields"></div>
+      <button type="submit" class="main-btn">Register Organization</button>
+    </form>
+  </div>
+
+<script>
+  // ====== Firebase Configuration ======
+  const firebaseConfig = {
+      apiKey: "AIzaSyB8p97ph9lfvVkoAd4SucxL1aQ0NGHLmjY",
+      authDomain: "sharecare-616af.firebaseapp.com",
+      projectId: "sharecare-616af",
+      storageBucket: "sharecare-616af.firebasestorage.app",
+      messagingSenderId: "45027282617",
+      appId: "1:45027282617:web:55627278ee0421fc06d568",
+      measurementId: "G-ZY25LNSPMD"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  const forms = {
+    NGO: [
+      { label: "Organization Name*", id: "orgName", type: "text" },
+      { label: "Email*", id: "email", type: "email" },   // Added email
+      { label: "Phone", id: "phone", type: "tel" },
+      { label: "Focus Area", id: "focus", type: "text" },
+      { label: "State", id: "state", type: "text" },
+      { label: "Pincode", id: "pincode", type: "text" },
+    ],
+    Orphanage: [
+      { label: "Orphanage Name", id: "orgName", type: "text" },
+      { label: "Head Person Name", id: "contactPerson", type: "text" },
+      { label: "Number of Children", id: "children", type: "number" },
+      { label: "Email*", id: "email", type: "email" }, // Added email
+      { label: "Phone", id: "phone", type: "tel" },
+      { label: "Pincode", id: "pincode", type: "text" },
+      { label: "State", id: "state", type: "text" },
+    ],
+    "Old Age Home": [
+      { label: "Organization Name", id: "orgName", type: "text" },
+      { label: "Incharge Name", id: "contactPerson", type: "text" },
+      { label: "Number of Residents", id: "residents", type: "number" },
+      { label: "Email*", id: "email", type: "email" }, // Added email
+      { label: "Phone", id: "phone", type: "tel" },
+      { label: "Pincode", id: "pincode", type: "text" },
+      { label: "State", id: "state", type: "text" },
+    ]
+  };
+
+  const statesList = [
+    "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
+    "Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand",
+    "Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur",
+    "Meghalaya","Mizoram","Nagaland","Odisha","Punjab",
+    "Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
+    "Uttar Pradesh","Uttarakhand","West Bengal",
+    "Andaman and Nicobar Islands","Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu","Delhi",
+    "Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"
+  ];
+
+  function openForm(type) {
+    document.getElementById('formTitle').textContent = type + " Registration";
+    const formGrid = document.getElementById("formFields");
+
+    formGrid.innerHTML = forms[type].map(f =>
+      `<div class="form-group">
+        <label>${f.label}</label>
+        ${f.id === "state" ? `
+          <select id="${f.id}" required>
+            <option value="" disabled selected>Select your state</option>
+            ${statesList.map(s => `<option value="${s}">${s}</option>`).join('')}
+          </select>` : `
+          <input type="${f.type}" id="${f.id}" placeholder="Enter ${f.label.toLowerCase()}" required>
+        `}
+      </div>`).join('');
+
+    if (type === 'NGO' || type === 'Orphanage' || type === 'Old Age Home') {
+      formGrid.innerHTML += `
+        <div class="form-group">
+          <label>Number of Members / Beneficiaries</label>
+          <div class="member-counts">
+            <input type="number" id="maleCount" placeholder="Male" min="0" required>
+            <input type="number" id="femaleCount" placeholder="Female" min="0" required>
+            <div class="total-display">
+              <input type="number" id="totalCount" placeholder="Total" min="0" readonly>
+              <span class="total-label">👥 Total Members</span>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    formGrid.innerHTML += `
+      <textarea id="address" placeholder="Enter full address" required></textarea>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Create password" required>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter password" required>
+      </div>
+      <textarea id="requirements" placeholder="List requirements or notes"></textarea>`;
+
+    document.getElementById('popupForm').classList.add('active');
+
+    // Auto count total
+    document.getElementById('maleCount')?.addEventListener('input', updateTotal);
+    document.getElementById('femaleCount')?.addEventListener('input', updateTotal);
+    function updateTotal() {
+      const male = parseInt(document.getElementById('maleCount')?.value || 0);
+      const female = parseInt(document.getElementById('femaleCount')?.value || 0);
+      document.getElementById('totalCount').value = male + female;
+    }
+  }
+
+  function closeForm() {
+    document.getElementById('popupForm').classList.remove('active');
+  }
+
+  // ===== Form Submission =====
+  const receiverForm = document.getElementById('receiverForm');
+  receiverForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // ====== Validation ======
+    let isValid = true;
+    document.querySelectorAll(".error-text").forEach(e => e.remove());
+
+    const fields = [
+      "orgName","contactPerson","phone","email","state","pincode",
+      "maleCount","femaleCount","totalCount","address","password","confirmPassword","requirements","focus","children","residents"
+    ];
+
+    const phonePattern = /^[6-9]\d{9}$/;
+    const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    const pinPattern = /^\d{6}$/;
+
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if(!el) return;
+      const val = el.value.trim();
+      let err = "";
+      if(val === "") err = "This field is required";
+      else if(id==="phone" && !phonePattern.test(val)) err = "Enter valid 10-digit phone";
+      else if(id==="email" && !emailPattern.test(val)) err = "Enter valid email";
+      else if(id==="pincode" && !pinPattern.test(val)) err = "Enter valid 6-digit pincode";
+      else if(id==="password" && val.length < 6) err = "Password must be at least 6 characters";
+      else if(id==="confirmPassword" && val !== document.getElementById('password').value.trim()) err = "Passwords do not match";
+
+      if(err){
+        const errDiv = document.createElement("div");
+        errDiv.className = "error-text";
+        errDiv.textContent = err;
+        el.parentElement.appendChild(errDiv);
+        el.style.border = "2px solid red";
+        isValid = false;
+      }
+    });
+
+    if(!isValid) return;
+
+    // ===== Firebase Auth & Firestore =====
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    let user;
+
+    try {
+      try {
+        // Try to create a new user
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        user = userCredential.user;
+        await user.updateProfile({ displayName: document.getElementById('orgName').value.trim() });
+        await user.sendEmailVerification();
+        alert("✅ Verification email sent! Please check your inbox.");
+      } catch(err) {
+        if(err.code === "auth/email-already-in-use"){
+          // If email already exists → sign in
+          const userCredential = await auth.signInWithEmailAndPassword(email, password);
+          user = userCredential.user;
+          if(!user.emailVerified){
+            await user.sendEmailVerification();
+            alert("✅ Verification email resent! Please check your inbox.");
+          }
+        } else {
+          throw err; // Other errors
+        }
+      }
+
+      // ===== Prepare submission data =====
+      const submission = {};
+      fields.forEach(f => {
+        const el = document.getElementById(f);
+        if(el) submission[f] = el.value.trim();
+      });
+      submission.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+
+      // ===== Save in Firestore =====
+      await db.collection("receivers").doc(user.uid).collection("submissions").add(submission);
+
+      // ---- ALSO SAVE ROLE IN MAIN RECEIVER DOC ----
+await db.collection("receivers").doc(user.uid).set({
+  role: "receiver",
+  email: email,
+  orgName: submission.orgName,
+  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
+
+
+      alert("✅ Organization submission saved successfully!");
+      receiverForm.reset();
+      document.querySelectorAll('.error-text').forEach(e=>e.remove());
+      document.querySelectorAll('input, select, textarea').forEach(i=>i.style.border='');
+
+      closeForm();
+
+    } catch(err){
+      console.error(err);
+      alert(err.message);
+    }
+  });
+</script>

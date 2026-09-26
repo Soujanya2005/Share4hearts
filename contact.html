@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us | Share4hearts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    /* ===== GENERAL ===== */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      color: #fff;
+      overflow-x: hidden;
+      background: linear-gradient(135deg, #667eea, #00ffc3, #764ba2, #ff6ec7);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ===== SPARKLING BACKGROUND ===== */
+    .animated-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .animated-bg span {
+      position: absolute;
+      display: block;
+      width: 10px; height: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: sparkle 4s linear infinite;
+      box-shadow: 0 0 15px rgba(255,255,255,0.7),
+                  0 0 30px rgba(0,255,192,0.5);
+    }
+    @keyframes sparkle {
+      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+      25% { transform: scale(1.2) rotate(45deg); opacity: 0.9; }
+      50% { transform: scale(1) rotate(90deg); opacity: 1; }
+      75% { transform: scale(1.2) rotate(135deg); opacity: 0.7; }
+      100% { transform: scale(0) rotate(180deg); opacity: 0; }
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 60px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 25px;
+    }
+    .nav-links a {
+      color: #fff;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: #00ffc3; }
+
+    /* ===== CONTACT SECTION ===== */
+    .contact-section {
+      min-height: 90vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 50px 20px;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .contact-card {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(20px);
+      padding: 50px 40px;
+      border-radius: 20px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .contact-title {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+    .contact-subtitle {
+      font-size: 1.1rem;
+      margin-bottom: 40px;
+      color: #f0f0f0;
+    }
+
+    .contact-items {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 25px;
+    }
+
+    .contact-box {
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 25px;
+      width: 220px;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .contact-box:hover {
+      background: linear-gradient(45deg, #00ffc3, #00b894);
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(0,255,195,0.4);
+    }
+
+    .contact-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .insta { background: linear-gradient(45deg,#f58529,#dd2a7b,#8134af,#515bd4); -webkit-text-fill-color: transparent; }
+    .mail { color: #ea4335; }
+    .phone { color: #34a853; }
+  </style>
+</head>
+
+<body>
+
+  <!-- Sparkling Animated Background -->
+  <div class="animated-bg">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">Share4hearts</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html" class="active">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Contact Section -->
+  <section class="contact-section">
+    <div class="contact-card">
+      <h1 class="contact-title">Get in Touch 💌</h1>
+      <p class="contact-subtitle">We’d love to hear from you! Reach us through any of these platforms.</p>
+
+      <div class="contact-items">
+        <div class="contact-box">
+          <i class="fa-brands fa-instagram contact-icon insta"></i>
+          <h3>Instagram</h3>
+          <p><a href="https://www.instagram.com/sharecare_app" target="_blank">@sharecare_app</a></p>
+        </div>
+
+        <div class="contact-box">
+          <i class="fa-solid fa-envelope contact-icon mail"></i>
+          <h3>Email</h3>
+          <p><a href="mailto:support@sharecare.org">support@sharecare.org</a></p>
+        </div>
+
+        <div class="contact-box">
+          <i class="fa-solid fa-phone contact-icon phone"></i>
+          <h3>Phone</h3>
+          <p><a href="tel:+919876543210">+91 98765 43210</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

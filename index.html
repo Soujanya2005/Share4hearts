@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Share4hearts | Home</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ===== GENERAL ===== */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      color: #fff;
+      overflow-x: hidden;
+
+      /* Animated gradient background */
+      background: linear-gradient(135deg, #667eea, #00ffc3, #764ba2, #ff6ec7);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ===== SPARKLING BACKGROUND ===== */
+    .animated-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .animated-bg span {
+      position: absolute;
+      display: block;
+      width: 10px; height: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: sparkle 4s linear infinite;
+      box-shadow: 0 0 15px rgba(255,255,255,0.7),
+                  0 0 30px rgba(0,255,192,0.5);
+    }
+    @keyframes sparkle {
+      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+      25% { transform: scale(1.2) rotate(45deg); opacity: 0.9; }
+      50% { transform: scale(1) rotate(90deg); opacity: 1; }
+      75% { transform: scale(1.2) rotate(135deg); opacity: 0.7; }
+      100% { transform: scale(0) rotate(180deg); opacity: 0; }
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 60px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 25px;
+    }
+    .nav-links a {
+      color: #fff;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: #00ffc3; }
+    .btn {
+      background: linear-gradient(45deg, #00ffc3, #00b894);
+      padding: 8px 15px;
+      border-radius: 8px;
+      transition: 0.3s;
+      color: #fff;
+    }
+    .btn:hover {
+      background: linear-gradient(45deg, #00b894, #019875);
+    }
+
+    /* ===== HERO SECTION ===== */
+    .hero {
+      height: 90vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+    }
+    .hero-content {
+      max-width: 700px;
+      padding: 20px;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      line-height: 1.2;
+      text-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+    .hero h1 span {
+      color: #00ffc3;
+    }
+    .hero p {
+      margin-top: 15px;
+      font-size: 1.2rem;
+      color: #f0f0f0;
+    }
+    .main-btn {
+      display: inline-block;
+      margin-top: 25px;
+      background: linear-gradient(45deg, #00ffc3, #00b894);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 255, 180, 0.3);
+    }
+    .main-btn:hover {
+      background: linear-gradient(45deg, #00b894, #019875);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sparkling Animated Background -->
+  <div class="animated-bg">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">Share4hearts</div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="what.html">What We Do</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="join.html" class="btn">Join Us</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-content">
+      <h1>Share a Little, <span>Change a Lot</span></h1>
+      <p>Donate food, clothes, and books to bring happiness to NGOs, orphanages, and old age homes.</p>
+      <a href="join.html" class="main-btn">Start Donating</a>
+    </div>
+  </header>
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8p97ph9lfvVkoAd4SucxL1aQ0NGHLmjY",
+    authDomain: "sharecare-616af.firebaseapp.com",
+    projectId: "sharecare-616af",
+    storageBucket: "sharecare-616af.firebasestorage.app",
+    messagingSenderId: "45027282617",
+    appId: "1:45027282617:web:55627278ee0421fc06d568",
+    measurementId: "G-ZY25LNSPMD"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+</body>
+</html>

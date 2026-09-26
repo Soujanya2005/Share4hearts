@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About | share4hearts </title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ===== GENERAL ===== */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      color: #fff;
+      overflow-x: hidden;
+
+      /* Animated gradient background */
+      background: linear-gradient(135deg, #667eea, #00ffc3, #764ba2, #ff6ec7);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ===== SPARKLING BACKGROUND ===== */
+    .animated-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .animated-bg span {
+      position: absolute;
+      display: block;
+      width: 10px; height: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: sparkle 4s linear infinite;
+      box-shadow: 0 0 15px rgba(255,255,255,0.7),
+                  0 0 30px rgba(0,255,192,0.5);
+    }
+    @keyframes sparkle {
+      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+      25% { transform: scale(1.2) rotate(45deg); opacity: 0.9; }
+      50% { transform: scale(1) rotate(90deg); opacity: 1; }
+      75% { transform: scale(1.2) rotate(135deg); opacity: 0.7; }
+      100% { transform: scale(0) rotate(180deg); opacity: 0; }
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 60px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 25px;
+    }
+    .nav-links a {
+      color: #fff;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: #00ffc3; }
+    .btn {
+      background: linear-gradient(45deg, #00ffc3, #00b894);
+      padding: 8px 15px;
+      border-radius: 8px;
+      transition: 0.3s;
+      color: #fff;
+    }
+    .btn:hover {
+      background: linear-gradient(45deg, #00b894, #019875);
+    }
+
+    /* ===== CONTENT SECTION ===== */
+    .content-section {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 100px auto;
+      padding: 40px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(25px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      text-align: center;
+      animation: fadeIn 1.5s ease forwards;
+    }
+    .content-section h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .content-section p {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sparkling Animated Background -->
+  <div class="animated-bg">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">Share4hearts</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html" class="active">About</a></li>
+      <li><a href="what.html">What We Do</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="join.html" class="btn">Join Us</a></li>
+    </ul>
+  </nav>
+
+  <!-- About Content Section -->
+  <section class="content-section fade-in">
+    <h1>About Us</h1>
+    <p> Share4hearts was created with a mission to connect hearts. We help bridge the gap between abundance and need by allowing donors to give what they can — food, clothes, or books — to those who need them most.</p>
+    <p>Our goal is to make giving as simple, transparent, and impactful as possible.</p>
+  </section>
+
+</body>
+</html>

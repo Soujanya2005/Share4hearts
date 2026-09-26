@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Volunteer Donations | Share4hearts</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+:root{
+  --accent: #00ffc3;
+  --accent-2: #00b894;
+  --glass: rgba(255,255,255,0.12);
+  --card-bg: rgba(255,255,255,0.10);
+  --input-bg: rgba(255,255,255,0.95);
+  --input-color: #222;
+  --highlight-new: #e0ffe0;
+  --highlight-accepted: #d0e0ff;
+}
+*{box-sizing:border-box}
+body{
+  font-family: 'Poppins', sans-serif;
+  margin:0; color:#fff;
+  background: linear-gradient(135deg, #667eea, #00ffc3, #764ba2, #ff6ec7);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+.animated-bg{ position: fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+.animated-bg span{ position:absolute; display:block; width:10px; height:10px; background: rgba(255,255,255,0.85); border-radius:50%; animation:sparkle 4s linear infinite; box-shadow:0 0 15px rgba(255,255,255,0.7), 0 0 30px rgba(0,255,192,0.4); }
+@keyframes sparkle{
+  0%{transform:scale(0) rotate(0deg); opacity:0}
+  25%{transform:scale(1.2) rotate(45deg); opacity:0.9}
+  50%{transform:scale(1) rotate(90deg); opacity:1}
+  75%{transform:scale(1.2) rotate(135deg); opacity:0.7}
+  100%{transform:scale(0) rotate(180deg); opacity:0}
+}
+.navbar{ display:flex; justify-content:space-between; align-items:center; padding:15px 40px; backdrop-filter: blur(10px); background: rgba(255,255,255,0.12); position:sticky; top:0; z-index:5; }
+.logo{ font-size:1.8rem; font-weight:700; color:#fff }
+.nav-links{ display:flex; gap:20px; }
+.nav-links a{ color:#fff; font-weight:500; text-decoration:none }
+.nav-links a.active, .nav-links a:hover{ color:var(--accent) }
+
+.content-section{ max-width:900px; margin:80px auto; padding:40px; border-radius:25px; background: var(--card-bg); backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align:center; position:relative; z-index:2; }
+.page-title{ font-size:2.2rem; margin-bottom:10px }
+.page-subtitle{ margin-bottom:30px; color:#f0f0f0 }
+
+#donationList li{ margin:10px 0; padding:10px; border-radius:12px; list-style:none; transition: transform .2s ease; }
+#donationList li.highlight-new{ background: var(--highlight-new); }
+#donationList li.highlight-accepted{ background: var(--highlight-accepted); }
+
+#notificationBell{ position: fixed; top: 20px; right: 20px; cursor:pointer; font-size:28px; z-index:10; }
+#notificationList{ position:fixed; top:65px; right:20px; width:260px; max-height:320px; overflow-y:auto; background: var(--card-bg); border-radius:15px; padding:10px; display:none; backdrop-filter: blur(18px); box-shadow:0 4px 20px rgba(0,0,0,0.3); z-index:10; }
+#notificationList li{ padding:8px; border-bottom:1px solid rgba(255,255,255,0.2); cursor:pointer; color:#fff; }
+
+@media (max-width:640px){ .content-section{ margin:40px 18px; padding:24px } }
+</style>
+</head>
+<body>
+
+<div class="animated-bg" aria-hidden="true">
+  <span style="left:10%; top:20%; animation-delay:0s"></span>
+  <span style="left:50%; top:40%; animation-delay:1s"></span>
+  <span style="left:80%; top:10%; animation-delay:2s"></span>
+  <span style="left:30%; top:70%; animation-delay:3s"></span>
+  <span style="left:60%; top:80%; animation-delay:4s"></span>
+  <span style="left:20%; top:50%; animation-delay:.5s"></span>
+  <span style="left:70%; top:30%; animation-delay:1.5s"></span>
+  <span style="left:40%; top:10%; animation-delay:2.5s"></span>
+  <span style="left:90%; top:60%; animation-delay:3.5s"></span>
+  <span style="left:15%; top:90%; animation-delay:4.5s"></span>
+</div>
+
+<nav class="navbar">
+  <div class="logo">Share4hearts</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="VolunteerDonation.html" class="active">Donations</a>
+  </div>
+</nav>
+
+<section class="content-section">
+  <h1 class="page-title">All Donations</h1>
+  <p class="page-subtitle">View all donations. You cannot post or accept them, but you will be notified in real time.</p>
+  <ul id="donationList"></ul>
+</section>
+
+<div id="notificationBell">🔔 <span id="notifCount">0</span></div>
+<ul id="notificationList"></ul>
+
+<script>
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyB8p97ph9lfvVkoAd4SucxL1aQ0NGHLmjY",
+  authDomain: "sharecare-616af.firebaseapp.com",
+  projectId: "sharecare-616af",
+  storageBucket: "sharecare-616af.firebasestorage.app",
+  messagingSenderId: "45027282617",
+  appId: "1:45027282617:web:55627278ee0421fc06d568",
+  measurementId: "G-ZY25LNSPMD"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+const donationList = document.getElementById('donationList');
+const notifBell = document.getElementById('notificationBell');
+const notifList = document.getElementById('notificationList');
+const notifCount = document.getElementById('notifCount');
+
+let currentUserRole = null;
+let notifications = [];
+
+// Voice helper
+function speak(msg){
+  try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg)); }
+  catch(e){ console.log('Speech error', e); }
+}
+
+// Detect role
+async function detectUserRole(uid){
+  if((await db.collection('volunteers').doc(uid).get()).exists) return 'volunteer';
+  if((await db.collection('donors').doc(uid).get()).exists) return 'donor';
+  if((await db.collection('receivers').doc(uid).get()).exists) return 'receiver';
+  return null;
+}
+
+// Auth & role setup
+auth.onAuthStateChanged(async user => {
+  if(!user){ alert('Login required.'); window.location.href='login.html'; return; }
+  currentUserRole = await detectUserRole(user.uid);
+});
+
+// Display Donations (with maps for addresses)
+db.collection('donations').orderBy('timestamp','desc').onSnapshot(async snapshot=>{
+  donationList.innerHTML = '';
+  const user = auth.currentUser;
+  if(!user) return;
+
+  for(const doc of snapshot.docs){
+    const data = doc.data();
+
+    // Get donor info
+    let donorInfo = {};
+    if(data.donorID){
+      const donorDoc = await db.collection('donors').doc(data.donorID).get();
+      donorInfo = donorDoc.exists ? donorDoc.data() : {};
+    }
+
+    // Get receiver info
+    let receiverInfo = {};
+    if(data.receiverID){
+      const receiverDoc = await db.collection('receivers').doc(data.receiverID).get();
+      receiverInfo = receiverDoc.exists ? receiverDoc.data() : {};
+    }
+
+    const li = document.createElement('li');
+    const timeText = data.timestamp?.toDate ? data.timestamp.toDate().toLocaleString() : '';
+
+    const donorMapLink = donorInfo.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(donorInfo.address)}` : '#';
+    const receiverMapLink = receiverInfo.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(receiverInfo.address)}` : '#';
+
+    li.innerHTML = `
+      <div><strong>${data.type}</strong> — ${data.description}</div>
+      <div style="font-size:0.85rem; opacity:0.8;">${timeText} • Status: ${data.status}</div>
+      <div style="font-size:0.85rem; opacity:0.9; margin-top:5px;">
+        Donor: ${donorInfo.name || '-'}, ${donorInfo.address || '-'} (${donorInfo.phone || '-'}) 
+        ${donorInfo.address ? `<a href="${donorMapLink}" target="_blank" style="color:var(--accent); margin-left:5px;">🗺️ Map</a>` : ''}
+      </div>
+      <div style="font-size:0.85rem; opacity:0.9; margin-top:2px;">
+        Receiver: ${receiverInfo.name || '-'}, ${receiverInfo.address || '-'} (${receiverInfo.phone || '-'})
+        ${receiverInfo.address ? `<a href="${receiverMapLink}" target="_blank" style="color:var(--accent); margin-left:5px;">🗺️ Map</a>` : ''}
+      </div>
+    `;
+
+    if(data.highlight==='new') li.classList.add('highlight-new');
+    else if(data.highlight==='accepted') li.classList.add('highlight-accepted');
+
+    donationList.appendChild(li);
+  }
+});
+
+// Notifications
+db.collection('notifications').orderBy('timestamp','desc').onSnapshot(snapshot=>{
+  notifications=[];
+  const user = auth.currentUser;
+  if(!user){ notifCount.textContent='0'; return; }
+  snapshot.forEach(doc=>{
+    const n = doc.data();
+    if(Array.isArray(n.to) && n.to.includes(user.uid)) notifications.push({id:doc.id,...n});
+  });
+  notifCount.textContent=notifications.filter(n=>!n.read).length;
+});
+
+notifBell.addEventListener('click', ()=>{
+  notifList.style.display = notifList.style.display==='block'?'none':'block';
+  renderNotifications();
+});
+
+async function renderNotifications(){
+  notifList.innerHTML='';
+  notifications.sort((a,b)=>(b.timestamp?.seconds||0)-(a.timestamp?.seconds||0));
+  notifications.forEach(n=>{
+    const li = document.createElement('li');
+    li.textContent = n.message + (n.read?'':' 🔵');
+    li.addEventListener('click', async ()=>{
+      try{
+        await db.collection('notifications').doc(n.id).update({read:true});
+        n.read=true;
+        notifCount.textContent = notifications.filter(n=>!n.read).length;
+        renderNotifications();
+      }catch(err){ console.error(err); }
+    });
+    notifList.appendChild(li);
+  });
+}
+</script>
+</body>
+</html>

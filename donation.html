@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Donation Page | Share4hearts</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+:root{
+  --accent: #00ffc3;
+  --accent-2: #00b894;
+  --glass: rgba(255,255,255,0.12);
+  --card-bg: rgba(255,255,255,0.10);
+  --input-bg: rgba(255,255,255,0.95);
+  --input-color: #222;
+  --error: #ff6b6b;
+  --highlight-new: #e0ffe0;
+  --highlight-accepted: #d0e0ff;
+}
+*{box-sizing:border-box}
+body{
+  font-family: 'Poppins', sans-serif;
+  margin:0; color:#fff;
+  background: linear-gradient(135deg, #667eea, #00ffc3, #764ba2, #ff6ec7);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+.animated-bg{ position: fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+.animated-bg span{ position:absolute; display:block; width:10px; height:10px; background: rgba(255,255,255,0.85); border-radius:50%; animation:sparkle 4s linear infinite; box-shadow:0 0 15px rgba(255,255,255,0.7), 0 0 30px rgba(0,255,192,0.4); }
+@keyframes sparkle{
+  0%{transform:scale(0) rotate(0deg); opacity:0}
+  25%{transform:scale(1.2) rotate(45deg); opacity:0.9}
+  50%{transform:scale(1) rotate(90deg); opacity:1}
+  75%{transform:scale(1.2) rotate(135deg); opacity:0.7}
+  100%{transform:scale(0) rotate(180deg); opacity:0}
+}
+.navbar{ display:flex; justify-content:space-between; align-items:center; padding:15px 40px; backdrop-filter: blur(10px); background: rgba(255,255,255,0.12); position:sticky; top:0; z-index:5; }
+.logo{ font-size:1.8rem; font-weight:700; color:#fff }
+.nav-links{ display:flex; gap:20px; }
+.nav-links a{ color:#fff; font-weight:500; text-decoration:none }
+.nav-links a.active, .nav-links a:hover{ color:var(--accent) }
+
+.content-section{ max-width:900px; margin:80px auto; padding:40px; border-radius:25px; background: var(--card-bg); backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align:center; position:relative; z-index:2; }
+.page-title{ font-size:2.2rem; margin-bottom:10px }
+.page-subtitle{ margin-bottom:30px; color:#f0f0f0 }
+
+.form-card{ background: rgba(255,255,255,0.15); padding:28px; border-radius:18px; backdrop-filter: blur(18px); box-shadow: 0 8px 32px rgba(0,0,0,0.25); transition: transform .25s ease; margin-bottom:30px; text-align:left; }
+.form-card:hover{ transform:translateY(-6px) }
+
+form{ width:100% }
+.form-row{ display:flex; gap:20px; flex-wrap:wrap; margin-bottom:18px; }
+.form-row .form-group{ flex:1; min-width:220px; text-align:left; position: relative; }
+label{ display:block; margin-bottom:8px; font-weight:600; color:#fff }
+input[type="text"], input[type="email"], input[type="tel"], select, textarea { width:100%; padding:12px; border-radius:10px; border:none; outline:none; font-size:1rem; background: var(--input-bg); color: var(--input-color); transition: box-shadow .18s ease, transform .12s ease; }
+textarea{ min-height:88px; resize:vertical }
+input:focus, select:focus, textarea:focus{ box-shadow: 0 0 0 3px rgba(0,255,195,0.12); transform: translateY(-1px); }
+.main-btn{ width:100%; padding:12px; border-radius:12px; border:none; background: linear-gradient(45deg, var(--accent), var(--accent-2)); color:#fff; font-weight:700; cursor:pointer; font-size:1.05rem; transition: transform .15s ease, box-shadow .15s ease; }
+.main-btn:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.12) }
+.error { color: var(--error); font-size:0.9rem; margin-top:6px; display:none; }
+input.invalid, textarea.invalid, select.invalid { border:1px solid var(--error); box-shadow: 0 0 8px rgba(255,80,80,0.15); }
+
+.donation-checkboxes { background: var(--input-bg); color: var(--input-color); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.donation-checkboxes label { font-size: 1rem; font-weight: 500; color: var(--input-color); display: flex; align-items: center; gap: 8px; }
+.donation-checkboxes input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+
+#notificationBell{ position: fixed; top: 20px; right: 20px; cursor:pointer; font-size:28px; z-index:10; }
+#notificationList{ position:fixed; top:65px; right:20px; width:260px; max-height:320px; overflow-y:auto; background: var(--card-bg); border-radius:15px; padding:10px; display:none; backdrop-filter: blur(18px); box-shadow:0 4px 20px rgba(0,0,0,0.3); z-index:10; }
+#notificationList li{ padding:8px; border-bottom:1px solid rgba(255,255,255,0.2); cursor:pointer; color:#fff; }
+#donationList li{ margin:10px 0; padding:10px; border-radius:12px; list-style:none; transition: transform .2s ease; }
+#donationList li.highlight-new{ background: var(--highlight-new); }
+#donationList li.highlight-accepted{ background: var(--highlight-accepted); }
+
+@media (max-width:640px){ .content-section{ margin:40px 18px; padding:24px } .form-row{ gap:12px } }
+</style>
+</head>
+<body>
+
+<div class="animated-bg" aria-hidden="true">
+  <span style="left:10%; top:20%; animation-delay:0s"></span>
+  <span style="left:50%; top:40%; animation-delay:1s"></span>
+  <span style="left:80%; top:10%; animation-delay:2s"></span>
+  <span style="left:30%; top:70%; animation-delay:3s"></span>
+  <span style="left:60%; top:80%; animation-delay:4s"></span>
+  <span style="left:20%; top:50%; animation-delay:.5s"></span>
+  <span style="left:70%; top:30%; animation-delay:1.5s"></span>
+  <span style="left:40%; top:10%; animation-delay:2.5s"></span>
+  <span style="left:90%; top:60%; animation-delay:3.5s"></span>
+  <span style="left:15%; top:90%; animation-delay:4.5s"></span>
+</div>
+
+<nav class="navbar">
+  <div class="logo">Share4hearts</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="donation.html" class="active">Donate</a>
+  </div>
+</nav>
+
+<section class="content-section">
+  <h1 class="page-title">Post a Donation</h1>
+  <p class="page-subtitle">Share leftover food, clothes, or stationery with those in need.</p>
+
+  <div class="form-card">
+    <form id="donationForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Donation Type</label>
+          <select id="donationType" required>
+            <option value="">Select type</option>
+            <option value="Food">Food</option>
+            <option value="Clothes">Clothes</option>
+            <option value="Stationery">Stationery</option>
+          </select>
+          <div class="error" id="donationTypeError">Please select a donation type.</div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="description" placeholder="Enter details of your donation" required></textarea>
+          <div class="error" id="descriptionError">Please provide a description.</div>
+        </div>
+      </div>
+      <button type="submit" class="main-btn">Post Donation</button>
+    </form>
+  </div>
+
+  <h2 style="margin-bottom:15px;">Available Donations</h2>
+  <ul id="donationList"></ul>
+</section>
+
+<div id="notificationBell">🔔 <span id="notifCount">0</span></div>
+<ul id="notificationList"></ul>
+
+<script>
+// ===== Firebase Config =====
+const firebaseConfig = {
+  apiKey: "AIzaSyB8p97ph9lfvVkoAd4SucxL1aQ0NGHLmjY",
+  authDomain: "sharecare-616af.firebaseapp.com",
+  projectId: "sharecare-616af",
+  storageBucket: "sharecare-616af.firebasestorage.app",
+  messagingSenderId: "45027282617",
+  appId: "1:45027282617:web:55627278ee0421fc06d568",
+  measurementId: "G-ZY25LNSPMD"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+// DOM refs
+const donationForm = document.getElementById('donationForm');
+const donationFormCard = document.getElementById('donationFormCard');
+const donationList = document.getElementById('donationList');
+const notifBell = document.getElementById('notificationBell');
+const notifList = document.getElementById('notificationList');
+const notifCount = document.getElementById('notifCount');
+
+let currentUserRole = null;
+let notifications = [];
+
+// ===== Helper: Voice =====
+function speak(msg){
+  try{
+    const u = new SpeechSynthesisUtterance(msg);
+    window.speechSynthesis.speak(u);
+  }catch(e){
+    console.log('Speech error', e);
+  }
+}
+
+// ===== Determine Role (by checking each collection) =====
+async function detectUserRole(uid){
+  // Check donors
+  const donorDoc = await db.collection('donors').doc(uid).get();
+  if(donorDoc.exists) return 'donor';
+  const receiverDoc = await db.collection('receivers').doc(uid).get();
+  if(receiverDoc.exists) return 'receiver';
+  const volDoc = await db.collection('volunteers').doc(uid).get();
+  if(volDoc.exists) return 'volunteer';
+  return null;
+}
+
+// ===== Auth & Role Setup =====
+auth.onAuthStateChanged(async user => {
+  if(!user){
+    // Not logged in — redirect to login (you can change this behavior)
+    alert('Login required to access donations.');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Detect role
+  currentUserRole = await detectUserRole(user.uid);
+  if(!currentUserRole){
+    // If user isn't in any role collection, hide form & show limited view
+    console.warn('User has no role document in donors/receivers/volunteers.');
+    donationFormCard.style.display = 'none';
+  } else {
+    // Role-based UI
+    if(currentUserRole !== 'donor'){
+      donationFormCard.style.display = 'none';
+    } else {
+      donationFormCard.style.display = 'block';
+    }
+  }
+
+  // Start listening to donations & notifications now that we know user
+  // (listeners below will still function but we want them active while user is available)
+});
+
+// ===== Post Donation (donor only) =====
+// ===== Post Donation (donor only) =====
+donationForm.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  // Block non-donors
+  if (currentUserRole !== 'donor') {
+    alert('Only donors can post donations.');
+    return;
+  }
+
+  const type = document.getElementById('donationType').value;
+  const desc = document.getElementById('description').value.trim();
+
+  // Validation
+  if (!type) {
+    document.getElementById('donationTypeError').style.display = 'block';
+    return;
+  } else {
+    document.getElementById('donationTypeError').style.display = 'none';
+  }
+
+  if (!desc) {
+    document.getElementById('descriptionError').style.display = 'block';
+    return;
+  } else {
+    document.getElementById('descriptionError').style.display = 'none';
+  }
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert('Please login first.');
+    return;
+  }
+
+  try {
+    // ===== Fetch donor details from donors collection =====
+    const donorDoc = await db.collection('donors').doc(user.uid).get();
+    let donorData = {};
+    if (donorDoc.exists) {
+      donorData = donorDoc.data(); // includes name, phone, etc.
+    }
+
+    // ===== Save donation with donor info =====
+    const donationRef = db.collection('donations').doc();
+    await donationRef.set({
+      donorID: user.uid,
+      donorEmail: user.email || null,
+      donorName: donorData.name || donorData.orgName || '',
+      donorPhone: donorData.phone || '',
+      type,
+      description: desc,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      status: 'pending',
+      receiverID: null,
+      highlight: 'new'
+    });
+
+    // ===== Notify all receivers and volunteers =====
+    const [recvSnap, volSnap] = await Promise.all([
+      db.collection('receivers').get(),
+      db.collection('volunteers').get()
+    ]);
+
+    const recvIDs = recvSnap.docs.map(d => d.id);
+    const volIDs = volSnap.docs.map(d => d.id);
+    const toIDs = [...new Set([...recvIDs, ...volIDs])];
+
+    await db.collection('notifications').add({
+      message: `New donation posted: ${type} — ${desc}`,
+      read: false,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      to: toIDs
+    });
+
+    // Optional voice feedback
+    speak(`New donation posted: ${type}`);
+
+    // Reset form
+    donationForm.reset();
+  } catch (err) {
+    console.error('Error posting donation:', err);
+    alert('Error posting donation: ' + err.message);
+  }
+});
+
+
+// ===== Display Donations (real-time) =====
+db.collection('donations').orderBy('timestamp','desc').onSnapshot(snapshot=>{
+  donationList.innerHTML = '';
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const id = doc.id;
+
+    const li = document.createElement('li');
+    li.setAttribute('data-id', id);
+
+    // Build donation content (type, description, time, status)
+    const timeText = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleString() : '';
+    li.innerHTML = `<div><strong>${data.type}</strong> — ${data.description}</div>
+                    <div style="font-size:0.85rem; opacity:0.8;">${timeText} • Status: ${data.status}</div>`;
+
+    // Apply persistent highlight classes
+    if(data.highlight === 'new'){
+      li.classList.add('highlight-new');
+    } else if(data.highlight === 'accepted'){
+      li.classList.add('highlight-accepted');
+    }
+
+    // If pending and current user is a receiver, show Accept button
+    if(data.status === 'pending' && currentUserRole === 'receiver'){
+      const btn = document.createElement('button');
+      btn.textContent = 'Accept';
+      btn.className = 'main-btn';
+      btn.style.marginTop = '8px';
+      btn.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if(!user){
+          alert('Please login to accept.');
+          return;
+        }
+
+        try{
+          // Update donation: accepted + persistent highlight -> 'accepted'
+          await db.collection('donations').doc(id).update({
+            status: 'accepted',
+            receiverID: user.uid,
+            highlight: 'accepted'
+          });
+
+          // Notify donor + volunteers
+          const volSnap = await db.collection('volunteers').get();
+          const volIDs = volSnap.docs.map(d => d.id);
+
+          await db.collection('notifications').add({
+            message: `Donation accepted: ${data.type} — ${data.description}`,
+            read: false,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            to: [data.donorID, ...volIDs]
+          });
+
+          speak(`Donation accepted: ${data.description}`);
+        }catch(err){
+          console.error('Error accepting donation:', err);
+          alert('Error accepting donation: ' + err.message);
+        }
+      });
+      li.appendChild(btn);
+    }
+
+    donationList.appendChild(li);
+  });
+});
+
+// ===== Notifications (real-time) =====
+db.collection('notifications').orderBy('timestamp','desc').onSnapshot(snapshot=>{
+  notifications = [];
+  const user = auth.currentUser;
+  if(!user) {
+    notifCount.textContent = '0';
+    return;
+  }
+
+  snapshot.forEach(doc => {
+    const n = doc.data();
+    // ensure n.to exists and is an array
+    if(Array.isArray(n.to) && n.to.includes(user.uid)){
+      notifications.push({ id: doc.id, ...n });
+    }
+  });
+
+  // show unread count
+  notifCount.textContent = notifications.filter(n => !n.read).length;
+});
+
+// Toggle notification dropdown
+notifBell.addEventListener('click', ()=>{
+  notifList.style.display = notifList.style.display === 'block' ? 'none' : 'block';
+  renderNotifications();
+});
+
+async function renderNotifications(){
+  notifList.innerHTML = '';
+  // Sort by timestamp descending (notifications array is already ordered by snapshot, but safe)
+  notifications.sort((a,b) => (b.timestamp && b.timestamp.seconds || 0) - (a.timestamp && a.timestamp.seconds || 0));
+  notifications.forEach(n => {
+    const li = document.createElement('li');
+    li.textContent = n.message + (n.read ? '' : ' 🔵');
+    li.style.cursor = 'pointer';
+    li.addEventListener('click', async () => {
+      try{
+        await db.collection('notifications').doc(n.id).update({ read: true });
+        // update local copy
+        n.read = true;
+        notifCount.textContent = notifications.filter(n => !n.read).length;
+        renderNotifications();
+      }catch(err){
+        console.error('Error marking notification read', err);
+      }
+    });
+    notifList.appendChild(li);
+  });
+}
+
+// Optional: Clean-up highlights older than X days (uncomment to enable)
+// function autoClearOldHighlights(days = 7){
+//   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+//   db.collection('donations').where('timestamp','<', firebase.firestore.Timestamp.fromMillis(cutoff)).get().then(snap=>{
+//     snap.forEach(doc=>{
+//       const d = doc.data();
+//       if(d.highlight){
+//         // remove highlight
+//         db.collection('donations').doc(doc.id).update({ highlight: '' }).catch(()=>{/* ignore */});
+//       }
+//     });
+//   });
+//}
+// autoClearOldHighlights(7); // clear highlights older than 7 days
+
+</script>
+
+
+</body>
+</html>
